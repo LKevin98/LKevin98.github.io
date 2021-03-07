@@ -1,0 +1,372 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ROS机器人学习(七)--ROS中的导航框架 | 不知所云</title><meta name="keywords" content="ROS,ROS仿真"><meta name="author" content="LKevin"><meta name="copyright" content="LKevin"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="move_base 基于move_base的导航框架  全局路径规划（global planner） 全局最优路径规划 Dijkstra或A*算法  本地实时规划（local planner） 规划机器人每个周期内的线速度、角速度，使之尽量符合全局最优路径。 实时避障 Trajectory Rollout和Dynamic Window Approaches算法 搜索躲避和行进的多条路径，综合评价标">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ROS机器人学习(七)--ROS中的导航框架">
+<meta property="og:url" content="https://lkevin98.github.io/posts/45733.html">
+<meta property="og:site_name" content="不知所云">
+<meta property="og:description" content="move_base 基于move_base的导航框架  全局路径规划（global planner） 全局最优路径规划 Dijkstra或A*算法  本地实时规划（local planner） 规划机器人每个周期内的线速度、角速度，使之尽量符合全局最优路径。 实时避障 Trajectory Rollout和Dynamic Window Approaches算法 搜索躲避和行进的多条路径，综合评价标">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.ax1x.com/2019/06/01/V3PiM6.md.png">
+<meta property="article:published_time" content="2019-04-29T02:36:25.000Z">
+<meta property="article:modified_time" content="2021-03-07T07:50:41.263Z">
+<meta property="article:author" content="LKevin">
+<meta property="article:tag" content="ROS">
+<meta property="article:tag" content="ROS仿真">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.ax1x.com/2019/06/01/V3PiM6.md.png"><link rel="shortcut icon" href="/img/yun-favicon.ico"><link rel="canonical" href="https://lkevin98.github.io/posts/45733"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: {"limitDay":500,"position":"top","messagePrev":"It has been","messageNext":"days since the last update, the content of the article may be outdated."},
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: true,
+  isToc: true,
+  postUpdate: '2021-03-07 15:50:41'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    })(window)</script><link rel="stylesheet" href="/css/myStyle.css"><meta name="generator" content="Hexo 5.1.0"></head><body><a href="javascript:void(0);" onclick="preloader.endLoading();" title="点击跳过动画"></a><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="scarecrow"><div class="scarecrow__hat"><div class="scarecrow__ribbon"></div></div><div class="scarecrow__head"><div class="scarecrow__eye"></div><div class="scarecrow__eye"></div><div class="scarecrow__mouth"></div><div class="scarecrow__pipe"></div></div><div class="scarecrow__body"><div class="scarecrow__glove scarecrow__glove--l"></div><div class="scarecrow__sleeve scarecrow__sleeve--l"></div><div class="scarecrow__bow"></div><div class="scarecrow__shirt"></div><div class="scarecrow__coat"></div><div class="scarecrow__waistcoat"></div><div class="scarecrow__sleeve scarecrow__sleeve--r"></div><div class="scarecrow__glove scarecrow__glove--r"></div><div class="scarecrow__coattails"></div><div class="scarecrow__pants"></div></div><div class="scarecrow__arms"></div><div class="scarecrow__leg">  </div></div></div><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" data-lazy-src="/img/head.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">125</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">106</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">33</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 菜单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></li><li><a class="site-page" href="/update/"><i class="fa-fw fas fa-info-circle"></i><span> 升级日志</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-coffee"></i><span> 留言板</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://s2.ax1x.com/2020/02/10/15VamF.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">不知所云</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 菜单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></li><li><a class="site-page" href="/update/"><i class="fa-fw fas fa-info-circle"></i><span> 升级日志</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-coffee"></i><span> 留言板</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">ROS机器人学习(七)--ROS中的导航框架</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2019-04-29T02:36:25.000Z" title="发表于 2019-04-29 10:36:25">2019-04-29</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2021-03-07T07:50:41.263Z" title="更新于 2021-03-07 15:50:41">2021-03-07</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/ROS/">ROS</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/ROS/ROS%E6%9C%BA%E5%99%A8%E4%BA%BA%E5%AD%A6%E4%B9%A0-%E4%BB%BF%E7%9C%9F/">ROS机器人学习(仿真)</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">3.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>12分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="move-base"><a href="#move-base" class="headerlink" title="move_base"></a>move_base</h2><p><img src= "/img/loading.gif" data-lazy-src="https://s2.ax1x.com/2019/06/01/V3PiM6.png" alt="V3PiM6.png"></p>
+<center>基于move_base的导航框架</center>
+
+<h3 id="全局路径规划（global-planner）"><a href="#全局路径规划（global-planner）" class="headerlink" title="全局路径规划（global planner）"></a>全局路径规划（global planner）</h3><ul>
+<li>全局最优路径规划</li>
+<li>Dijkstra或A*算法</li>
+</ul>
+<h3 id="本地实时规划（local-planner）"><a href="#本地实时规划（local-planner）" class="headerlink" title="本地实时规划（local planner）"></a>本地实时规划（local planner）</h3><ul>
+<li>规划机器人每个周期内的线速度、角速度，使之尽量符合全局最优路径。</li>
+<li>实时避障</li>
+<li>Trajectory Rollout和Dynamic Window Approaches算法</li>
+<li>搜索躲避和行进的多条路径，综合评价标准选取最优路径</li>
+</ul>
+<h3 id="move-base功能包中的话题和服务"><a href="#move-base功能包中的话题和服务" class="headerlink" title="move_base功能包中的话题和服务"></a>move_base功能包中的话题和服务</h3><p><img src= "/img/loading.gif" data-lazy-src="https://s2.ax1x.com/2019/06/01/V3CxIJ.png" alt="V3CxIJ.png"></p>
+<h3 id="move-base配置"><a href="#move-base配置" class="headerlink" title="move_base配置"></a>move_base配置</h3><p>据move_base的的导航框架得知，在进行路径规划时costmap是必不可少的。<br>在机器人进行路径规划时，我们需要明白规划算法是依靠什么在地图上来计算出来一条路径的。依靠的是gmapping扫描构建的一张环境全局地图，但是仅仅依靠一张原始的全局地图是不行的。因为这张地图是静态的，无法随时来更新地图上的障碍物信息。<br>在现实环境中，总会有各种无法预料到的新障碍物出现在当前地图中，或者旧的障碍物现在已经从环境地图中被移除掉了，那么我们就需要来随时更新这张地图。同时由于默认的地图是一张黑白灰三色地图，即只会标出障碍物区域、自由移动区域和未被探索区域。机器人在这样的地图中进行路径规划，会导致规划的路径不够安全，因为我们的机器人在移动时需要与障碍物之间保持一定的安全缓冲距离，这样机器人在当前地图中移动时就更安全了。</p>
+<h4 id="costmap代价地图"><a href="#costmap代价地图" class="headerlink" title="costmap代价地图"></a>costmap代价地图</h4><p>costmap简单来说就是为了在这张地图上进行各种加工，方便我们后面进行路径规划而存在的。那具体该如何实现costmap呢？<br>在ROS中使用 <a target="_blank" rel="noopener" href="http://wiki.ros.org/costmap_2d">costmap_2d</a> 这个软件包来实现的，该软件包在原始地图上实现了两张新的地图。一个是local_costmap，另外一个就是global_costmap，根据名字大家就可以知道了，两张costmap一个是为局部路径规划准备的，一个是为全局路径规划准备的。无论是local_costmap还是global_costmap，都可以配置多个图层，包括下面几种：</p>
+<ul>
+<li><p>Static Map Layer：静态地图层，基本上不变的地图层，通常都是SLAM建立完成的静态地图。</p>
+</li>
+<li><p>Obstacle Map Layer：障碍地图层，用于动态的记录传感器感知到的障碍物信息。</p>
+</li>
+<li><p>Inflation Layer：膨胀层，在以上两层地图上进行膨胀（向外扩张），以避免机器人的撞上障碍物。</p>
+</li>
+<li><p>Other Layers：你还可以通过插件的形式自己实现costmap，目前已有Social Costmap Layer、Range Sensor Layer等开源插件。</p>
+</li>
+</ul>
+<h4 id="配置costmap相关的参数"><a href="#配置costmap相关的参数" class="headerlink" title="配置costmap相关的参数"></a>配置costmap相关的参数</h4><h5 id="新建launch启动文件"><a href="#新建launch启动文件" class="headerlink" title="新建launch启动文件"></a>新建launch启动文件</h5><p>在 mbot_navigation 功能包launch目录下新建启动文件，命名为move_base.launch：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">launch</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">node</span> <span class="attr">pkg</span>=<span class="string">&quot;move_base&quot;</span> <span class="attr">type</span>=<span class="string">&quot;move_base&quot;</span> <span class="attr">respawn</span>=<span class="string">&quot;false&quot;</span> <span class="attr">name</span>=<span class="string">&quot;move_base&quot;</span> <span class="attr">output</span>=<span class="string">&quot;screen&quot;</span> <span class="attr">clear_params</span>=<span class="string">&quot;true&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">rosparam</span> <span class="attr">file</span>=<span class="string">&quot;$(find mbot_navigation)/config/costmap_common_params.yaml&quot;</span> <span class="attr">command</span>=<span class="string">&quot;load&quot;</span> <span class="attr">ns</span>=<span class="string">&quot;global_costmap&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">rosparam</span> <span class="attr">file</span>=<span class="string">&quot;$(find mbot_navigation)/config/costmap_common_params.yaml&quot;</span> <span class="attr">command</span>=<span class="string">&quot;load&quot;</span> <span class="attr">ns</span>=<span class="string">&quot;local_costmap&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">rosparam</span> <span class="attr">file</span>=<span class="string">&quot;$(find mbot_navigation)/config/local_costmap_params.yaml&quot;</span> <span class="attr">command</span>=<span class="string">&quot;load&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">rosparam</span> <span class="attr">file</span>=<span class="string">&quot;$(find mbot_navigation)/config/global_costmap_params.yaml&quot;</span> <span class="attr">command</span>=<span class="string">&quot;load&quot;</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">rosparam</span> <span class="attr">file</span>=<span class="string">&quot;$(find mbot_navigation)/config/base_local_planner_params.yaml&quot;</span> <span class="attr">command</span>=<span class="string">&quot;load&quot;</span> /&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">node</span>&gt;</span></span><br><span class="line">  </span><br><span class="line"><span class="tag">&lt;/<span class="name">launch</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>在启动move_base节点时，可以看到首先加载了costmap_common_params.yaml到global_costmap和local_costmap两个命名空间中，因为该配置文件是一个通用的代价地图配置参数，即local_costmap和global_costmap都需要配置的参数。然后下面是local_costmap_params.yaml专门为了局部代价地图配置的参数，global_costmap_params.yaml专门为全局代价地图配置的参数。</p>
+<h5 id="配置costmap-common-params-yaml"><a href="#配置costmap-common-params-yaml" class="headerlink" title="配置costmap_common_params.yaml"></a>配置costmap_common_params.yaml</h5><p>在config目录下，创建costmap_common_params.yaml文件，配置的参数如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">robot_radius: 0.16</span><br><span class="line">footprint: [[0.16, 0.16], [0.16, -0.16], [-0.16, -0.16], [-0.16, 0.16]]</span><br><span class="line">footprint_inflation: 0.01</span><br><span class="line"></span><br><span class="line">obstacle_layer:</span><br><span class="line">  enabled: true</span><br><span class="line">  combination_method: 1</span><br><span class="line">  track_unknown_space: true    # true needed for disabling global path planning through unknown space</span><br><span class="line">  obstacle_range: 2.5</span><br><span class="line">  raytrace_range: 3.0</span><br><span class="line">  observation_sources: scan</span><br><span class="line">  scan: &#123;data_type: LaserScan, topic: /scan, marking: true, clearing: true, expected_update_rate: 0&#125;</span><br><span class="line">  max_obstacle_height: 0.6</span><br><span class="line">  min_obstacle_height: 0.0</span><br><span class="line"></span><br><span class="line">#cost_scaling_factor and inflation_radius were now moved to the inflation_layer ns</span><br><span class="line">inflation_layer:</span><br><span class="line">  enabled:              true</span><br><span class="line">  cost_scaling_factor:  2.5  # exponential rate at which the obstacle cost drops off (default:10)</span><br><span class="line">  inflation_radius:     0.15  # max. distance from an obstacle at which costs are incurred for planning paths.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">static_layer:</span><br><span class="line">  enabled:              true</span><br></pre></td></tr></table></figure>
+<p>下面来依次解释下各参数的意义，方便大家以后来根据需要来自行修改调试：</p>
+<ul>
+<li><p><strong>robot_radius</strong>：设置机器人的半径，单位是米。由于我的机器人是圆形的，所以可以直接设置该参数。如果你的机器人不是圆形的那就需要使用 <strong>footprint</strong> 这个参数，该参数是一个列表，其中的每一个坐标代表机器人上的一点，设置机器人的中心为[0,0]，根据机器人不同的形状，找到机器人各凸出的坐标点即可，具体可参考下图来设置：<img src= "/img/loading.gif" data-lazy-src="https://s2.ax1x.com/2019/06/01/V3CLrT.png" alt="V3CLrT.png"></p>
+</li>
+<li><p><strong>obstacle_layer</strong>：配置障碍物图层</p>
+<ul>
+<li><em>enabled</em>:是否启用该层</li>
+<li><em>combination_method</em>：只能设置为0或1，用来更新地图上的代价值，一般设置为1;</li>
+<li><em>track_unknown_space</em>: 如果设置为false，那么地图上代价值就只分为致命碰撞和自由区域两种，如果设置为true，那么就分为致命碰撞，自由区域和未知区域三种。意思是说假如该参数设置为false的话，就意味着地图上的未知区域也会被认为是可以自由移动的区域，这样在进行全局路径规划时，可以把一些未探索的未知区域也来参与到路径规划，如果你需要这样的话就将该参数设置为false。不过一般情况未探索的区域不应该当作可以自由移动的区域，因此一般将该参数设置为true;</li>
+<li><em>obstacle_range</em>:设置机器人检测障碍物的最大范围，意思是说超过该范围的障碍物，并不进行检测，只有靠近到该范围内才把该障碍物当作影响路径规划和移动的障碍物;</li>
+<li><em>raytrace_range</em>:在机器人移动过程中，实时清除代价地图上的障碍物的最大范围，更新可自由移动的空间数据。假如设置该值为3米，那么就意味着在3米内的障碍物，本来开始时是有的，但是本次检测却没有了，那么就需要在代价地图上来更新，将旧障碍物的空间标记为可以自由移动的空间</li>
+<li><em>observation_sources</em>:设置导航中所使用的传感器，这里可以用逗号形式来区分开很多个传感器，例如激光雷达，碰撞传感器，超声波传感器等，我这里只设置了激光雷达;</li>
+<li>data_type:激光雷达数据类型;</li>
+<li>topic:该激光雷达发布的话题名;</li>
+<li>marking:是否可以使用该传感器来标记障碍物;</li>
+<li>clearing:是否可以使用该传感器来清除障碍物标记为自由空间;</li>
+<li><em>max_obstacle_height</em>:以米为单位插入costmap的任何障碍物的最大高度。此参数应设置为略高于机器人的高度。</li>
+<li><em>min_obstacle_height</em>:传感器读数的最小高度（以米为单位）视为有效。通常设置为地面高度。</li>
+</ul>
+</li>
+<li><p><strong>inflation_layer</strong>:膨胀层，用于在障碍物外标记一层危险区域，在路径规划时需要避开该危险区域<br><em>enabled</em>:是否启用该层;</p>
+<ul>
+<li><p><em>cost_scaling_factor</em>:膨胀过程中应用到代价值的比例因子，代价地图中到实际障碍物距离在内切圆半径到膨胀半径之间的所有cell可以使用如下公式来计算膨胀代价：</p>
+<p>exp(-1.0 * cost_scaling_factor * (distance_from_obstacle – inscribed_radius)) * (costmap_2d::INSCRIBED_INFLATED_OBSTACLE – 1)</p>
+<p>公式中costmap_2d::INSCRIBED_INFLATED_OBSTACLE目前指定为254，</p>
+<p>注意： 由于在公式中cost_scaling_factor被乘了一个负数，所以增大比例因子反而会降低代价。</p>
+</li>
+<li><p><em>inflation_radius</em>:膨胀半径，膨胀层会把障碍物代价膨胀直到该半径为止，一般将该值设置为机器人底盘的直径大小。</p>
+</li>
+</ul>
+</li>
+<li><p><strong>Static_layer</strong>:静态地图层，即SLAM中构建的地图层</p>
+<ul>
+<li><em>enabled</em>:是否启用该地图层;</li>
+</ul>
+</li>
+</ul>
+<h5 id="配置global-costmap-params-yaml"><a href="#配置global-costmap-params-yaml" class="headerlink" title="配置global_costmap_params.yaml"></a>配置global_costmap_params.yaml</h5><p>全局代价地图是作为进行全局路径规划时的参考，我们需要在config目录中，创建global_costmap_params.yaml文件，该文件是为全局代价地图配置的参数，具体配置的参数如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">global_costmap:</span><br><span class="line">   global_frame: map</span><br><span class="line">   robot_base_frame: base_footprint</span><br><span class="line">   update_frequency: 1.0</span><br><span class="line">   publish_frequency: 1.0</span><br><span class="line">   static_map: true</span><br><span class="line">   rolling_window: false</span><br><span class="line">   resolution: 0.05</span><br><span class="line">   transform_tolerance: 1.0</span><br><span class="line">   map_type: costmap</span><br></pre></td></tr></table></figure>
+<p>下面我们来详细解释下该全局代价地图配置文件中各参数的意义：</p>
+<ul>
+<li><p><strong>global_frame</strong>：全局代价地图需要在哪个坐标系下运行;</p>
+</li>
+<li><p><strong>robot_base_frame</strong>：在全局代价地图中机器人本体的基坐标系，就是机器人上的根坐标系。通过global_frame和robot_base_frame就可以计算两个坐标系之间的变换，得知机器人在全局坐标系中的坐标了。</p>
+</li>
+<li><p><strong>update_frequency</strong>：全局代价地图更新频率，一般全局代价地图更新频率设置的比较小;</p>
+</li>
+<li><p><strong>static_map</strong>：配置是否使用map_server提供的地图来初始化，一般全局地图都是静态的，需要设置为true;</p>
+</li>
+<li><p><strong>rolling_window</strong>：是否在机器人移动过程中需要滚动窗口，始终保持机器人在当前窗口中心位置;</p>
+</li>
+<li><p><strong>transform_tolerance</strong>：坐标系间的转换可以忍受的最大延时;</p>
+</li>
+</ul>
+<h5 id="配置local-costmap-params-yaml"><a href="#配置local-costmap-params-yaml" class="headerlink" title="配置local_costmap_params.yaml"></a>配置local_costmap_params.yaml</h5><p>局部代价地图配置参数所建立的地图主要是为局部路径规划所使用，我们可以在config目录下，创建local_costmap_params.yaml文件，完整内容如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">local_costmap:</span><br><span class="line">   global_frame: odom</span><br><span class="line">   robot_base_frame: base_footprint</span><br><span class="line">   update_frequency: 3.0</span><br><span class="line">   publish_frequency: 1.0</span><br><span class="line">   static_map: false</span><br><span class="line">   rolling_window: true</span><br><span class="line">   width: 6.0</span><br><span class="line">   height: 6.0</span><br><span class="line">   resolution: 0.05</span><br><span class="line">   transform_tolerance: 1.0</span><br></pre></td></tr></table></figure>
+<p>下面来详细解释下每个参数的意义：</p>
+<ul>
+<li><p><strong>global_frame</strong>：在局部代价地图中的全局坐标系，一般需要设置为odom_frame；</p>
+</li>
+<li><p><strong>robot_base_frame</strong>：机器人本体的基坐标系;</p>
+</li>
+<li><p><strong>update_frequency</strong>：局部代价地图的更新频率;</p>
+</li>
+<li><p><strong>publish_frequency</strong>：局部代价地图的发布频率;</p>
+</li>
+<li><p><strong>static_map</strong>：局部代价地图一般不设置为静态地图，因为需要检测是否在机器人附近有新增的动态障碍物;</p>
+</li>
+<li><p><strong>rolling_window</strong>：使用滚动窗口，始终保持机器人在当前局部地图的中心位置;</p>
+</li>
+<li><p><strong>width</strong>：滚动窗口的宽度，单位是米;</p>
+</li>
+<li><p><strong>height</strong>：滚动窗口的高度，单位是米;</p>
+</li>
+<li><p><strong>resolution</strong>：地图的分辨率，该分辨率可以从加载的地图相对应的配置文件中获取到;</p>
+</li>
+<li><p><strong>transform_tolerance</strong>：局部代价地图中的坐标系之间转换的最大可忍受延时;</p>
+</li>
+</ul>
+<p>具体更多参数含义参考官网：<a target="_blank" rel="noopener" href="http://wiki.ros.org/move_base/">http://wiki.ros.org/move_base/</a></p>
+<h2 id="amcl"><a href="#amcl" class="headerlink" title="amcl"></a>amcl</h2><ul>
+<li>蒙特卡罗定位算法</li>
+<li>二维环境定位</li>
+<li>针对已有地图使用粒子滤波器跟踪一个机器人的姿态</li>
+</ul>
+<p><img src= "/img/loading.gif" data-lazy-src="https://s2.ax1x.com/2019/06/01/V3Cva4.png" alt="V3Cva4.png"></p>
+<h3 id="amcl功能包中的话题和服务"><a href="#amcl功能包中的话题和服务" class="headerlink" title="amcl功能包中的话题和服务"></a>amcl功能包中的话题和服务</h3><p><img src= "/img/loading.gif" data-lazy-src="https://s2.ax1x.com/2019/06/01/V3COqU.png" alt="V3COqU.png"></p>
+<h3 id="转换"><a href="#转换" class="headerlink" title="转换"></a>转换</h3><p><img src= "/img/loading.gif" data-lazy-src="https://s2.ax1x.com/2019/06/01/V3CqMV.png" alt="V3CqMV.png"></p>
+<ul>
+<li>里程计定位：只通过里程计的数据来处理/base和/odom之间的TF转换；</li>
+<li>可以估算机器人在地图坐标系/map下的位姿信息，提供/base、/odom、/map之间的TF变换。</li>
+</ul>
+<h3 id="amcl参数配置"><a href="#amcl参数配置" class="headerlink" title="amcl参数配置"></a>amcl参数配置</h3><p>在 mbot_navigation 功能包launch目录下新建amcl.launch文件：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">launch</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">arg</span> <span class="attr">name</span>=<span class="string">&quot;use_map_topic&quot;</span> <span class="attr">default</span>=<span class="string">&quot;false&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">arg</span> <span class="attr">name</span>=<span class="string">&quot;scan_topic&quot;</span> <span class="attr">default</span>=<span class="string">&quot;scan&quot;</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">node</span> <span class="attr">pkg</span>=<span class="string">&quot;amcl&quot;</span> <span class="attr">type</span>=<span class="string">&quot;amcl&quot;</span> <span class="attr">name</span>=<span class="string">&quot;amcl&quot;</span> <span class="attr">clear_params</span>=<span class="string">&quot;true&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;use_map_topic&quot;</span> <span class="attr">value</span>=<span class="string">&quot;$(arg use_map_topic)&quot;</span>/&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- Publish scans from best pose at a max of 10 Hz --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;odom_model_type&quot;</span> <span class="attr">value</span>=<span class="string">&quot;diff&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;odom_alpha5&quot;</span> <span class="attr">value</span>=<span class="string">&quot;0.1&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;gui_publish_rate&quot;</span> <span class="attr">value</span>=<span class="string">&quot;10.0&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;laser_max_beams&quot;</span> <span class="attr">value</span>=<span class="string">&quot;60&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;laser_max_range&quot;</span> <span class="attr">value</span>=<span class="string">&quot;12.0&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;min_particles&quot;</span> <span class="attr">value</span>=<span class="string">&quot;500&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;max_particles&quot;</span> <span class="attr">value</span>=<span class="string">&quot;2000&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;kld_err&quot;</span> <span class="attr">value</span>=<span class="string">&quot;0.05&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;kld_z&quot;</span> <span class="attr">value</span>=<span class="string">&quot;0.99&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;odom_alpha1&quot;</span> <span class="attr">value</span>=<span class="string">&quot;0.2&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;odom_alpha2&quot;</span> <span class="attr">value</span>=<span class="string">&quot;0.2&quot;</span>/&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- translation std dev, m --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;odom_alpha3&quot;</span> <span class="attr">value</span>=<span class="string">&quot;0.2&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;odom_alpha4&quot;</span> <span class="attr">value</span>=<span class="string">&quot;0.2&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;laser_z_hit&quot;</span> <span class="attr">value</span>=<span class="string">&quot;0.5&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;laser_z_short&quot;</span> <span class="attr">value</span>=<span class="string">&quot;0.05&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;laser_z_max&quot;</span> <span class="attr">value</span>=<span class="string">&quot;0.05&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;laser_z_rand&quot;</span> <span class="attr">value</span>=<span class="string">&quot;0.5&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;laser_sigma_hit&quot;</span> <span class="attr">value</span>=<span class="string">&quot;0.2&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;laser_lambda_short&quot;</span> <span class="attr">value</span>=<span class="string">&quot;0.1&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;laser_model_type&quot;</span> <span class="attr">value</span>=<span class="string">&quot;likelihood_field&quot;</span>/&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- &lt;param name=&quot;laser_model_type&quot; value=&quot;beam&quot;/&gt; --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;laser_likelihood_max_dist&quot;</span> <span class="attr">value</span>=<span class="string">&quot;2.0&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;update_min_d&quot;</span> <span class="attr">value</span>=<span class="string">&quot;0.25&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;update_min_a&quot;</span> <span class="attr">value</span>=<span class="string">&quot;0.2&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;odom_frame_id&quot;</span> <span class="attr">value</span>=<span class="string">&quot;odom&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;resample_interval&quot;</span> <span class="attr">value</span>=<span class="string">&quot;1&quot;</span>/&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- Increase tolerance because the computer can get quite busy --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;transform_tolerance&quot;</span> <span class="attr">value</span>=<span class="string">&quot;1.0&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;recovery_alpha_slow&quot;</span> <span class="attr">value</span>=<span class="string">&quot;0.0&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">param</span> <span class="attr">name</span>=<span class="string">&quot;recovery_alpha_fast&quot;</span> <span class="attr">value</span>=<span class="string">&quot;0.0&quot;</span>/&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">remap</span> <span class="attr">from</span>=<span class="string">&quot;scan&quot;</span> <span class="attr">to</span>=<span class="string">&quot;$(arg scan_topic)&quot;</span>/&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">node</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">launch</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>参数含义参考官网：<a target="_blank" rel="noopener" href="http://wiki.ros.org/amcl">http://wiki.ros.org/amcl</a></p>
+<h3 id="Bibliography"><a href="#Bibliography" class="headerlink" title="Bibliography"></a>Bibliography</h3><p>[1] costmap_2d的ROS Wiki主页.<br><a target="_blank" rel="noopener" href="http://wiki.ros.org/costmap_2d/">http://wiki.ros.org/costmap_2d/</a><br><a target="_blank" rel="noopener" href="http://wiki.ros.org/costmap_2d/flat">http://wiki.ros.org/costmap_2d/flat</a></p>
+<p>[2] move_base软件包的ROS Wiki主页.<br><a target="_blank" rel="noopener" href="http://wiki.ros.org/move_base">http://wiki.ros.org/move_base</a></p>
+<p>[3] costmap代价地图.<br><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_32115101/article/details/81121220">https://blog.csdn.net/qq_32115101/article/details/81121220</a></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">LKevin</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://lkevin98.github.io/posts/45733.html">https://lkevin98.github.io/posts/45733.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://LKevin98.github.io" target="_blank">不知所云</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/ROS/">ROS</a><a class="post-meta__tags" href="/tags/ROS%E4%BB%BF%E7%9C%9F/">ROS仿真</a></div><div class="post_share"><div class="social-share" data-image="https://s2.ax1x.com/2019/06/01/V3PiM6.md.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button button--animated"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="https://s1.ax1x.com/2020/10/16/0beRrn.jpg" target="_blank"><img class="post-qr-code-img" data-lazy-src="https://s1.ax1x.com/2020/10/16/0beRrn.jpg" alt="wechat"/></a><div class="post-qr-code-desc">wechat</div></li><li class="reward-item"><a href="https://s1.ax1x.com/2020/08/22/ddlcan.png" target="_blank"><img class="post-qr-code-img" data-lazy-src="https://s1.ax1x.com/2020/08/22/ddlcan.png" alt="alipay"/></a><div class="post-qr-code-desc">alipay</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/31300.html"><img class="prev-cover" data-lazy-src="https://s2.ax1x.com/2019/06/01/V3PEZD.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">ROS机器人学习(八)--ROS机器人自主导航</div></div></a></div><div class="next-post pull-right"><a href="/posts/42632.html"><img class="next-cover" data-lazy-src="https://s2.ax1x.com/2019/06/01/V3CsPA.md.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">ROS机器人学习(六)--ROS SLAM功能包应用方法</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/posts/4133.html" title="ROS机器人学习(一)--URDF建模"><img class="cover" data-lazy-src="https://s2.ax1x.com/2019/06/01/V1z49P.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-04-24</div><div class="title">ROS机器人学习(一)--URDF建模</div></div></a></div><div><a href="/posts/9050.html" title="ROS机器人学习(二)--URDF模型优化"><img class="cover" data-lazy-src="https://s2.ax1x.com/2019/06/01/V1z49P.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-04-24</div><div class="title">ROS机器人学习(二)--URDF模型优化</div></div></a></div><div><a href="/posts/9594.html" title="ROS机器人学习(五)--机器人SLAM导航必备条件"><img class="cover" data-lazy-src="https://s2.ax1x.com/2019/11/04/Kvo6N4.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-04-28</div><div class="title">ROS机器人学习(五)--机器人SLAM导航必备条件</div></div></a></div><div><a href="/posts/63737.html" title="ROS机器人学习(三)--使用ArbotiX控制机器人模型"><img class="cover" data-lazy-src="https://s2.ax1x.com/2019/06/01/V1zXhq.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-04-25</div><div class="title">ROS机器人学习(三)--使用ArbotiX控制机器人模型</div></div></a></div><div><a href="/posts/31300.html" title="ROS机器人学习(八)--ROS机器人自主导航"><img class="cover" data-lazy-src="https://s2.ax1x.com/2019/06/01/V3PEZD.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-04-30</div><div class="title">ROS机器人学习(八)--ROS机器人自主导航</div></div></a></div><div><a href="/posts/42632.html" title="ROS机器人学习(六)--ROS SLAM功能包应用方法"><img class="cover" data-lazy-src="https://s2.ax1x.com/2019/06/01/V3CsPA.md.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-04-28</div><div class="title">ROS机器人学习(六)--ROS SLAM功能包应用方法</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-info-avatar is-center"><img class="avatar-img" data-lazy-src="/img/head.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">LKevin</div><div class="author-info__description">随遇而安，奇遇良人</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">125</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">106</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">33</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/LKevin98/LKevin98.github.io"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://gitee.com/lkevin98/blog" target="_blank" title="Gitee"><i class="fa fa-rocket"></i></a><a class="social-icon" href="mailto:magicalsoso@qq.com" target="_blank" title="Email"><i class="fa fa-envelope"></i></a><a class="social-icon" href="https://LKevin98.github.io/about/" target="_blank" title="RSS"><i class="fa fa-rss"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">一生很漫长，也很短暂，总要留下点什么。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#move-base"><span class="toc-text">move_base</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%A8%E5%B1%80%E8%B7%AF%E5%BE%84%E8%A7%84%E5%88%92%EF%BC%88global-planner%EF%BC%89"><span class="toc-text">全局路径规划（global planner）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%AC%E5%9C%B0%E5%AE%9E%E6%97%B6%E8%A7%84%E5%88%92%EF%BC%88local-planner%EF%BC%89"><span class="toc-text">本地实时规划（local planner）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#move-base%E5%8A%9F%E8%83%BD%E5%8C%85%E4%B8%AD%E7%9A%84%E8%AF%9D%E9%A2%98%E5%92%8C%E6%9C%8D%E5%8A%A1"><span class="toc-text">move_base功能包中的话题和服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#move-base%E9%85%8D%E7%BD%AE"><span class="toc-text">move_base配置</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#costmap%E4%BB%A3%E4%BB%B7%E5%9C%B0%E5%9B%BE"><span class="toc-text">costmap代价地图</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%85%8D%E7%BD%AEcostmap%E7%9B%B8%E5%85%B3%E7%9A%84%E5%8F%82%E6%95%B0"><span class="toc-text">配置costmap相关的参数</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%96%B0%E5%BB%BAlaunch%E5%90%AF%E5%8A%A8%E6%96%87%E4%BB%B6"><span class="toc-text">新建launch启动文件</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%85%8D%E7%BD%AEcostmap-common-params-yaml"><span class="toc-text">配置costmap_common_params.yaml</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%85%8D%E7%BD%AEglobal-costmap-params-yaml"><span class="toc-text">配置global_costmap_params.yaml</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E9%85%8D%E7%BD%AElocal-costmap-params-yaml"><span class="toc-text">配置local_costmap_params.yaml</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#amcl"><span class="toc-text">amcl</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#amcl%E5%8A%9F%E8%83%BD%E5%8C%85%E4%B8%AD%E7%9A%84%E8%AF%9D%E9%A2%98%E5%92%8C%E6%9C%8D%E5%8A%A1"><span class="toc-text">amcl功能包中的话题和服务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BD%AC%E6%8D%A2"><span class="toc-text">转换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#amcl%E5%8F%82%E6%95%B0%E9%85%8D%E7%BD%AE"><span class="toc-text">amcl参数配置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Bibliography"><span class="toc-text">Bibliography</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/8fb19f32.html" title="Hexo-Twikoo评论系统配置教程"><img data-lazy-src="https://s1.ax1x.com/2020/08/22/ddmjxJ.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hexo-Twikoo评论系统配置教程"/></a><div class="content"><a class="title" href="/posts/8fb19f32.html" title="Hexo-Twikoo评论系统配置教程">Hexo-Twikoo评论系统配置教程</a><time datetime="2021-03-06T09:46:25.000Z" title="发表于 2021-03-06 17:46:25">2021-03-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/e1a92981.html" title="WIFI无线桥接,信号放大"><img data-lazy-src="https://s3.ax1x.com/2021/03/06/6ngSE9.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="WIFI无线桥接,信号放大"/></a><div class="content"><a class="title" href="/posts/e1a92981.html" title="WIFI无线桥接,信号放大">WIFI无线桥接,信号放大</a><time datetime="2021-03-06T05:50:00.000Z" title="发表于 2021-03-06 13:50:00">2021-03-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ec72beec.html" title="免费CDN：jsDelivr+Github"><img data-lazy-src="https://cdn.jsdelivr.net/gh/LKevin98/CDN@1.0/img/blog_background/4610b912c8fcc3ce005c05d19c45d688d53f20b0.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="免费CDN：jsDelivr+Github"/></a><div class="content"><a class="title" href="/posts/ec72beec.html" title="免费CDN：jsDelivr+Github">免费CDN：jsDelivr+Github</a><time datetime="2021-03-06T03:50:00.000Z" title="发表于 2021-03-06 11:50:00">2021-03-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/dfff96f9.html" title="VSCode创建编译CMake工程的一般流程"><img data-lazy-src="https://s3.ax1x.com/2021/03/04/6VTaQ0.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="VSCode创建编译CMake工程的一般流程"/></a><div class="content"><a class="title" href="/posts/dfff96f9.html" title="VSCode创建编译CMake工程的一般流程">VSCode创建编译CMake工程的一般流程</a><time datetime="2021-03-04T08:33:25.000Z" title="发表于 2021-03-04 16:33:25">2021-03-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/fb945601.html" title="Ubuntu下安装配置VSCode"><img data-lazy-src="https://s3.ax1x.com/2021/03/02/6k2lXn.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Ubuntu下安装配置VSCode"/></a><div class="content"><a class="title" href="/posts/fb945601.html" title="Ubuntu下安装配置VSCode">Ubuntu下安装配置VSCode</a><time datetime="2021-03-02T12:56:25.000Z" title="发表于 2021-03-02 20:56:25">2021-03-02</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By LKevin</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat_btn" type="button" title="rightside.chat_btn"><i class="fas fa-sms"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script async="async">var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> {preloader.endLoading()})
+setTimeout(function(){preloader.endLoading();}, 3000);</script></div><div class="js-pjax"><script>(()=>{
+  const $countDom = document.getElementById('twikoo-count')
+  const init = () => {
+    let initData = {
+      el: '#twikoo-wrap',
+      envId: 'blog-7gors0356a378fe3',
+      region: ''
+    }
+
+    if (false) {
+      const otherData = false
+      initData = Object.assign(initData, otherData)
+    }
+    
+    twikoo.init(initData)
+  }
+
+  const getCount = () => {
+    twikoo.getCommentsCount({
+      envId: 'blog-7gors0356a378fe3',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(function (res) {
+      $countDom.innerText = res[0].count
+    }).catch(function (err) {
+      console.error(err);
+    });
+  }
+
+  const loadTwikoo = (bool = false) => {
+    if (typeof twikoo === 'object') {
+      init()
+      bool && $countDom && setTimeout(getCount,0)
+    } else {
+      getScript('https://cdn.jsdelivr.net/npm/twikoo@1.2.0/dist/twikoo.all.min.js').then(()=> {
+        init()
+        bool && $countDom && setTimeout(getCount,0)
+      })
+    }
+  }
+
+  if ('Twikoo' === 'Twikoo' || !true) {
+    if (true) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo(true)
+  } else {
+    window.loadOtherComment = () => {
+      loadTwikoo()
+    }
+  }
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script>window.$crisp = [];
+window.CRISP_WEBSITE_ID = "978fa68e-d822-4b91-a1fe-31ba59390d0b";
+(function () {
+  d = document;
+  s = d.createElement("script");
+  s.src = "https://client.crisp.chat/l.js";
+  s.async = 1;
+  d.getElementsByTagName("head")[0].appendChild(s);
+})();
+$crisp.push(["safe", true])
+
+if (true) {
+  $crisp.push(["do", "chat:hide"])
+  $crisp.push(["on", "chat:closed", function() {
+    $crisp.push(["do", "chat:hide"])
+  }])
+  var chatBtnFn = () => {
+    var chatBtn = document.getElementById("chat_btn")
+    chatBtn.addEventListener("click", function(){
+      $crisp.push(["do", "chat:show"])
+      $crisp.push(["do", "chat:open"])
+
+    });
+  }
+  chatBtnFn()
+} else {
+  if (true) {
+    function chatBtnHide () {
+      $crisp.push(["do", "chat:hide"])
+    }
+    function chatBtnShow () {
+      $crisp.push(["do", "chat:show"])
+    }
+  }
+}</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

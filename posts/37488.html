@@ -1,0 +1,442 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>STM32F429开发板学习笔记 | 不知所云</title><meta name="keywords" content="笔记,STM32"><meta name="author" content="LKevin"><meta name="copyright" content="LKevin"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="本人在学习野火STM32F429开发板时记录的笔记。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="STM32F429开发板学习笔记">
+<meta property="og:url" content="https://lkevin98.github.io/posts/37488.html">
+<meta property="og:site_name" content="不知所云">
+<meta property="og:description" content="本人在学习野火STM32F429开发板时记录的笔记。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.ax1x.com/2020/02/10/15AYhq.jpg">
+<meta property="article:published_time" content="2019-04-20T00:46:25.000Z">
+<meta property="article:modified_time" content="2020-09-21T02:44:17.000Z">
+<meta property="article:author" content="LKevin">
+<meta property="article:tag" content="笔记">
+<meta property="article:tag" content="STM32">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.ax1x.com/2020/02/10/15AYhq.jpg"><link rel="shortcut icon" href="/img/yun-favicon.ico"><link rel="canonical" href="https://lkevin98.github.io/posts/37488"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//fonts.googleapis.com" crossorigin=""/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Titillium+Web&amp;display=swap" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"search.xml","languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: {"defaultEncoding":2,"translateDelay":0,"msgToTraditionalChinese":"繁","msgToSimplifiedChinese":"簡"},
+  noticeOutdate: {"limitDay":500,"position":"top","messagePrev":"It has been","messageNext":"days since the last update, the content of the article may be outdated."},
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '天',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: {"chs_to_cht":"你已切换为繁体","cht_to_chs":"你已切换为简体","day_to_night":"你已切换为深色模式","night_to_day":"你已切换为浅色模式","bgLight":"#49b1f5","bgDark":"#121212","position":"bottom-left"},
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: true,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = { 
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: true,
+  isToc: true,
+  postUpdate: '2020-09-21 10:44:17'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    })(window)</script><link rel="stylesheet" href="/css/myStyle.css"><meta name="generator" content="Hexo 5.1.0"></head><body><a href="javascript:void(0);" onclick="preloader.endLoading();" title="点击跳过动画"></a><div id="loading-box"><div class="loading-left-bg"></div><div class="loading-right-bg"></div><div class="scarecrow"><div class="scarecrow__hat"><div class="scarecrow__ribbon"></div></div><div class="scarecrow__head"><div class="scarecrow__eye"></div><div class="scarecrow__eye"></div><div class="scarecrow__mouth"></div><div class="scarecrow__pipe"></div></div><div class="scarecrow__body"><div class="scarecrow__glove scarecrow__glove--l"></div><div class="scarecrow__sleeve scarecrow__sleeve--l"></div><div class="scarecrow__bow"></div><div class="scarecrow__shirt"></div><div class="scarecrow__coat"></div><div class="scarecrow__waistcoat"></div><div class="scarecrow__sleeve scarecrow__sleeve--r"></div><div class="scarecrow__glove scarecrow__glove--r"></div><div class="scarecrow__coattails"></div><div class="scarecrow__pants"></div></div><div class="scarecrow__arms"></div><div class="scarecrow__leg">  </div></div></div><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="author-avatar"><img class="avatar-img" data-lazy-src="/img/head.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">125</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">106</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">33</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 菜单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></li><li><a class="site-page" href="/update/"><i class="fa-fw fas fa-info-circle"></i><span> 升级日志</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-coffee"></i><span> 留言板</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('https://s2.ax1x.com/2020/02/10/14Msw8.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">不知所云</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 菜单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友情链接</span></a></li><li><a class="site-page" href="/update/"><i class="fa-fw fas fa-info-circle"></i><span> 升级日志</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fa fa-coffee"></i><span> 留言板</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">STM32F429开发板学习笔记</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2019-04-20T00:46:25.000Z" title="发表于 2019-04-20 08:46:25">2019-04-20</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2020-09-21T02:44:17.000Z" title="更新于 2020-09-21 10:44:17">2020-09-21</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a><i class="fas fa-angle-right post-meta-separator"></i><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/STM32/">STM32</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">字数总计:</span><span class="word-count">1.7k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>6分钟</span></span><span class="post-meta-separator">|</span><span class="post-meta-pv-cv"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h3 id="新建工程模板——固件库流程"><a href="#新建工程模板——固件库流程" class="headerlink" title="新建工程模板——固件库流程"></a>新建工程模板——固件库流程</h3><p>  <center>2018-01-28</center><br>1-先在本地新建一个文件夹，用于存储固件库文件;</p>
+<p> （Doc、Libraries、Listings、Output、Project、User）</p>
+<p>2-在工程里面添加组，然后在里面添加文件;</p>
+<p>  （STARUP、CMSIS、STM32F4xx_StdPeriph_Driver、User、Doc）</p>
+<p>3-编译，会出现很多错误，打开stm32f4xx.h文件;</p>
+<p>4-在工具链中的C/C++选项卡里面指定头文件的目录;</p>
+<p>  （把所有的.h文件目录都添加进来）</p>
+<p>5-在工具链中的C/C++选项卡里面添加这两个宏：</p>
+<p>  USE_STDPERIPH_DRIVER,STM32F429_439xx,</p>
+<p>6-把一下文件屏蔽掉，不编译它;</p>
+<p>  （stm32f4xx_cec.c,stm32f4xx_dsi.c,stm32f4xx_flash_ramfurc.c，stm32f4xx_fsmc.c,stm32f4xx_qspi.c）</p>
+<p>7-修改stm32f4xx_it.c文件;</p>
+<p>  （删除：#include “main.h”,TimingDelay_Decrement();）</p>
+<p>8-配置仿真器</p>
+<br>
+### GPIO
+  <center>1/24/2018</center>
+#### GPIO输出初始化顺序
+
+<p>    1-打开GPIO端口的时钟</p>
+<p>    2-配置MODER寄存器</p>
+<p>    3-确定是推挽输出还是开漏输出（输出类型寄存器：OTYPER）</p>
+<p>    4-配置输出速度（输出速度寄存器：OSPEEDR）</p>
+<p>    5-内部上拉/下拉电阻要不要开启（上拉/下拉寄存器：PUPDR）</p>
+<p>    6-具体要输出的内容（置位复位寄存器：BSRR、数据输出寄存器：ODR）</p>
+<p> <br></p>
+<h4 id="GPIO输入初始化"><a href="#GPIO输入初始化" class="headerlink" title="GPIO输入初始化"></a>GPIO输入初始化</h4><p>    1-打开GPIO端口的时钟</p>
+<p>    2-选定具体的引脚号</p>
+<p>    3-配置为输入（MODER寄存器）</p>
+<p>    4-配置为下拉/上拉/浮空（[PUPDR寄存器]具体情况而定）</p>
+<br>
+#### 推挽输出
+
+<p>    1.可以输出高低电平，高电平由VDD决定，低电平由VSS决定</p>
+<p>    2.两个三极管受两路互补信号控制，一个导通时另一个截止。开关效率高，电流大、驱动能力强。</p>
+<p>    3.输出高电平时，电流输出到负载，叫灌电流，可以理解为推；</p>
+<p>      输出低电平时，负载电流流向芯片，叫拉电流，即挽。</p>
+<p> <br></p>
+<h4 id="开漏输出"><a href="#开漏输出" class="headerlink" title="开漏输出"></a>开漏输出</h4><p>    1.只能输出低电平，不能输出高电平</p>
+<p>    2.如果要输出高电平，则需要外接上拉</p>
+<p>    3.具有“线与”功能，一个为低，全部为低（多用于I2C和SMBUS总线）</p>
+<p> <br></p>
+<h4 id="施密特触发器"><a href="#施密特触发器" class="headerlink" title="施密特触发器"></a>施密特触发器</h4><p>    把信号更准确地分辨出为二进制的1或者0</p>
+<p> （高于阈值电压都为1,；低于阈值电压都为0）</p>
+<p> <br></p>
+<h4 id="typedef指令："><a href="#typedef指令：" class="headerlink" title="typedef指令："></a>typedef指令：</h4><p>    相当于给一个已有的类型起了一个新的名字，然后可以像使用旧类型名一样使用新类型名来声明变量。</p>
+<p>    注意：并没有创建任何新类型，它只是为某个已存在的类型增加一个方便使用的标签。</p>
+<br>
+#### 三原色配色
+
+<p>    红 + 黄 = 橙</p>
+<p>    黄 + 蓝 = 绿</p>
+<p>    蓝 + 红 = 紫</p>
+<br>
+### 定时器
+  <center>2018-03-18</center>
+#### 定时器分类
+基本定时器、通用定时器、高级定时器
+
+<br>
+#### 定时器资源
+429有2个高级定时器（TIM1和TIM8）、10个通用定时器、2个基本定时器（TIM6和TIM7）
+<br>
+#### 基本定时器（TIM6和TIM7）
+
+<p>    1-计数器16bit，只能向上计数；</p>
+<p>    2-没有外部GPIO，式内部资源，只能定时；</p>
+<p>    3-时钟来自PCLK1，可实现1~65536分频；</p>
+<p><br> </p>
+<h4 id="影子寄存器"><a href="#影子寄存器" class="headerlink" title="影子寄存器"></a>影子寄存器</h4><p>    1-PSC和ARR都有影子寄存器；</p>
+<p>    2-起到缓冲的作用，用户值-&gt;寄存器-&gt;影子寄存器-&gt;起作用，</p>
+<p>      如果不使用影子寄存器则用户在写到寄存器之后则立刻起作用。</p>
+<p>    ARR影子，TIMx_CR1:APRE位控制。</p>
+<p><br> </p>
+<h4 id="定时时间的计算"><a href="#定时时间的计算" class="headerlink" title="定时时间的计算"></a>定时时间的计算</h4><p>    1、PSC（分频因子）=9000-1，定时器频率=90M/(PSC+1)=10000HZ，计算一次脉冲的时间=1/10000 s</p>
+<p>    2、ARR（自动重载寄存器）=4999,从0计数到4999，则计了5000次</p>
+<p>    3、T=5000/10000=0.5S</p>
+<br>
+#### Timer编程要点：
+
+<p>    1-配置时间初始化结构体</p>
+<p>    2-开启定时器更新中断</p>
+<p>    3-配置中断优先级</p>
+<p>    4-使能定时器</p>
+<p>    5-编写中断服务函数</p>
+<p>    6-编写main函数</p>
+<br>
+### 中断(EXTI)
+<center>2018-03-19</center>
+#### 中断编程的顺序
+
+<ol>
+<li><p>使能中断请求；（跟具体的外设寄存器相关）</p>
+</li>
+<li><p>配置中断优先级分组；</p>
+<p>优先级设定：NVIC-&gt;IPRx;优先级分组：SCB-&gt;AIRCR:PRIGROUP[10:8]</p>
+</li>
+<li><p>配置NVIC寄存器，初始化NVIC_InitTypeDef;</p>
+</li>
+<li><p>编写中断服务函数，编写在stm32f4xx_it.c.（函数名在启动文件查找）</p>
+</li>
+</ol>
+<p> <br></p>
+<h4 id="EXTI初始化结构体：（EXTI-InitTypeDef）"><a href="#EXTI初始化结构体：（EXTI-InitTypeDef）" class="headerlink" title="EXTI初始化结构体：（EXTI_InitTypeDef）"></a>EXTI初始化结构体：（EXTI_InitTypeDef）</h4><ol>
+<li><p>EXTI_Line：用于产生 中断/事件 线</p>
+</li>
+<li><p>EXTI_Mode：EXTI模式（中断/事件）</p>
+</li>
+<li><p>EXTI_Trigger：触发（上/下/上下 沿）</p>
+</li>
+<li><p>EXTI_LineCmd：使能或者失能（IMR/EMR）</p>
+</li>
+</ol>
+<br>
+#### EXTI编程要点（按键检测——中断方式）
+
+<p>    1-初始化要连接到EXTI的GPIO</p>
+<p>    2-初始化EXTI用于产生中断/事件</p>
+<p>    3-初始化NVIC，用于处理中断</p>
+<p>    4-编写中断服务函数</p>
+<p>    5-main函数</p>
+<br>
+### SysTick:系统定时器
+ <center>2018-03-21</center>
+SysTick：系统定时器，24位，只能递减。
+
+<p>唯一的固件库函数：__STATIC_INLINE unit32_t SysTick_Config(uint32_t ticks);</p>
+<p> <br></p>
+<h4 id="编程要点"><a href="#编程要点" class="headerlink" title="编程要点"></a>编程要点</h4><p>    1-初始化LED相关的GPIO</p>
+<p>    2-配置SysTick(STK_CTRL寄存器)</p>
+<p>    3-编写中断服务函数</p>
+<p>    4-main函数</p>
+<br>
+### 串口通信
+ <center>2018-03-28</center>
+波特率 = fplck/8*(2-OVER8)*USARTDIV
+
+<p>波特率寄存器：USART_BRR</p>
+<p>USARTDIV：无符号定点数</p>
+<p>FPLCK：串口时钟，注区分APB2和APB1两条总线</p>
+<p>OVER8：过采样模式（寄存器：USART_CR1）</p>
+<br>
+#### UART编程要点
+
+<p>    1-初始化串口需要用到的GPIO，GPIO_InitTypeDef,</p>
+<p>      GPIO_PinAFConfig();</p>
+<p>    2-初始化串口，USART_InitTypeDef</p>
+<p>    3-中断配置</p>
+<p>    4-使能串口</p>
+<p>    5-编写发送和接受函数</p>
+<p>    6-编写中断服务函数</p>
+<br>
+### DMA(Data Memory Access，直接存储器访问)
+ <center>2018-03-30</center>
+DMA1：P->M，M->P
+
+<p>DMA2：P-&gt;M,M-&gt;P，M-&gt;M</p>
+<br>
+#### 编程要点
+
+<p>M to M:</p>
+<p>    1-在Flash中定义好要传输的数据，在SRAM中定义好用来接收Flash数据的变量</p>
+<p>    2-确定使用DMA2，哪个数据流，哪个通道？</p>
+<p>    3-初始化DMA（DMA_DeInit（）），主要是配置DMA初始化结构体（DMA_InitTypeDef）</p>
+<p>    4-使能DMA</p>
+<p>    5-编写数据比较函数</p>
+<p>    6-编写main函数</p>
+<p>M to P：</p>
+<p>    1-初始化串口</p>
+<p>    2-配置DMA初始化结构体</p>
+<p>    3-编写main函数（开启串口发送DMA请求）</p>
+<br>
+### I2C编程要点
+<center>2018-03-31</center>
+    1-配置通讯使用的目标引脚为开漏模式；
+
+<p>    2-使能I2C外设的时钟；</p>
+<p>    3-配置I2C外设的模式、地址、速率等参数并使能I2C外设；</p>
+<p>    4-编写基本I2C按字节收发函数；</p>
+<p>    5-编写读写EEPROM存储内容的函数；</p>
+<p>    6-编写测试程序，对读写数据进行校验。</p>
+<p> </p>
+<p>eg.我们的 PCLK1=45MHz，想要配置 400Kbit/s 的速率，计算方式如下：</p>
+<p>    PCLK时钟周期： TPCLK1 = 1/45000000</p>
+<p>    目标SCL时钟周期： TSCL = 1/400000</p>
+<p>    SCL时钟周期内的高电平时间： THIGH = TSCL/3</p>
+<p>    （CCR寄存器的DUTY为0：SCL时钟周期内的低电平时间： TLOW = 2*TSCL/3）</p>
+<p>    计算CCR的值： CCR = THIGH/TPCLK1 = 37.5</p>
+<br>
+### SPI编程要点
+<center>2018-04-08</center>
+    1-初始化通讯使用的目标引脚及端口时钟；
+
+<p>    2-使能SPI外设的时钟；</p>
+<p>    3-配置SPI外设的模式、地址、速率等参数并使能SPI外设；</p>
+<p>    4-编写基本SPI按字节收发的函数；</p>
+<p>    5-编写对FLASH擦除及读写操作的函数；</p>
+<p>    6-编写main函数
+    </p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">LKevin</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://lkevin98.github.io/posts/37488.html">https://lkevin98.github.io/posts/37488.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://LKevin98.github.io" target="_blank">不知所云</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E7%AC%94%E8%AE%B0/">笔记</a><a class="post-meta__tags" href="/tags/STM32/">STM32</a></div><div class="post_share"><div class="social-share" data-image="https://s2.ax1x.com/2020/02/10/15AYhq.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button button--animated"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="https://s1.ax1x.com/2020/10/16/0beRrn.jpg" target="_blank"><img class="post-qr-code-img" data-lazy-src="https://s1.ax1x.com/2020/10/16/0beRrn.jpg" alt="wechat"/></a><div class="post-qr-code-desc">wechat</div></li><li class="reward-item"><a href="https://s1.ax1x.com/2020/08/22/ddlcan.png" target="_blank"><img class="post-qr-code-img" data-lazy-src="https://s1.ax1x.com/2020/08/22/ddlcan.png" alt="alipay"/></a><div class="post-qr-code-desc">alipay</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/posts/20875.html"><img class="prev-cover" data-lazy-src="https://s2.ax1x.com/2020/02/10/15ppqI.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">上一篇</div><div class="prev_info">51单片机学习摘要</div></div></a></div><div class="next-post pull-right"><a href="/posts/17311.html"><img class="next-cover" data-lazy-src="https://s2.ax1x.com/2020/02/10/15AA7d.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">STM8S103F3P6核心板学习笔记</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span> 相关推荐</span></div><div class="relatedPosts-list"><div><a href="/posts/20875.html" title="51单片机学习摘要"><img class="cover" data-lazy-src="https://s2.ax1x.com/2020/02/10/15ppqI.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-04-20</div><div class="title">51单片机学习摘要</div></div></a></div><div><a href="/posts/8520.html" title="Git学习笔记"><img class="cover" data-lazy-src="https://s2.ax1x.com/2020/02/10/15iZt0.md.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-04-20</div><div class="title">Git学习笔记</div></div></a></div><div><a href="/posts/55370.html" title="Markdown文件的基本编写语法"><img class="cover" data-lazy-src="https://s2.ax1x.com/2020/02/10/15FnUI.md.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-04-20</div><div class="title">Markdown文件的基本编写语法</div></div></a></div><div><a href="/posts/17311.html" title="STM8S103F3P6核心板学习笔记"><img class="cover" data-lazy-src="https://s2.ax1x.com/2020/02/10/15AA7d.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-04-20</div><div class="title">STM8S103F3P6核心板学习笔记</div></div></a></div><div><a href="/posts/54885.html" title="ROS建图导航小车whbot"><img class="cover" data-lazy-src="https://s2.ax1x.com/2020/02/10/14MBOP.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-04-25</div><div class="title">ROS建图导航小车whbot</div></div></a></div><div><a href="/posts/17780.html" title="在ARM体系中字、半字、字节的概念理解"><img class="cover" data-lazy-src="https://s2.ax1x.com/2020/02/10/14MUWd.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2019-08-01</div><div class="title">在ARM体系中字、半字、字节的概念理解</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="card-info-avatar is-center"><img class="avatar-img" data-lazy-src="/img/head.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/><div class="author-info__name">LKevin</div><div class="author-info__description">随遇而安，奇遇良人</div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">125</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">106</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">33</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/LKevin98/LKevin98.github.io"><i class="fab fa-github"></i><span>GitHub</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://gitee.com/lkevin98/blog" target="_blank" title="Gitee"><i class="fa fa-rocket"></i></a><a class="social-icon" href="mailto:magicalsoso@qq.com" target="_blank" title="Email"><i class="fa fa-envelope"></i></a><a class="social-icon" href="https://LKevin98.github.io/about/" target="_blank" title="RSS"><i class="fa fa-rss"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">一生很漫长，也很短暂，总要留下点什么。</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B0%E5%BB%BA%E5%B7%A5%E7%A8%8B%E6%A8%A1%E6%9D%BF%E2%80%94%E2%80%94%E5%9B%BA%E4%BB%B6%E5%BA%93%E6%B5%81%E7%A8%8B"><span class="toc-text">新建工程模板——固件库流程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#GPIO%E8%BE%93%E5%85%A5%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-text">GPIO输入初始化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BC%80%E6%BC%8F%E8%BE%93%E5%87%BA"><span class="toc-text">开漏输出</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%BD%E5%AF%86%E7%89%B9%E8%A7%A6%E5%8F%91%E5%99%A8"><span class="toc-text">施密特触发器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#typedef%E6%8C%87%E4%BB%A4%EF%BC%9A"><span class="toc-text">typedef指令：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BD%B1%E5%AD%90%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-text">影子寄存器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9A%E6%97%B6%E6%97%B6%E9%97%B4%E7%9A%84%E8%AE%A1%E7%AE%97"><span class="toc-text">定时时间的计算</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#EXTI%E5%88%9D%E5%A7%8B%E5%8C%96%E7%BB%93%E6%9E%84%E4%BD%93%EF%BC%9A%EF%BC%88EXTI-InitTypeDef%EF%BC%89"><span class="toc-text">EXTI初始化结构体：（EXTI_InitTypeDef）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BC%96%E7%A8%8B%E8%A6%81%E7%82%B9"><span class="toc-text">编程要点</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/posts/8fb19f32.html" title="Hexo-Twikoo评论系统配置教程"><img data-lazy-src="https://s1.ax1x.com/2020/08/22/ddmjxJ.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Hexo-Twikoo评论系统配置教程"/></a><div class="content"><a class="title" href="/posts/8fb19f32.html" title="Hexo-Twikoo评论系统配置教程">Hexo-Twikoo评论系统配置教程</a><time datetime="2021-03-06T09:46:25.000Z" title="发表于 2021-03-06 17:46:25">2021-03-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/e1a92981.html" title="WIFI无线桥接,信号放大"><img data-lazy-src="https://s3.ax1x.com/2021/03/06/6ngSE9.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="WIFI无线桥接,信号放大"/></a><div class="content"><a class="title" href="/posts/e1a92981.html" title="WIFI无线桥接,信号放大">WIFI无线桥接,信号放大</a><time datetime="2021-03-06T05:50:00.000Z" title="发表于 2021-03-06 13:50:00">2021-03-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/ec72beec.html" title="免费CDN：jsDelivr+Github"><img data-lazy-src="https://cdn.jsdelivr.net/gh/LKevin98/CDN@1.0/img/blog_background/4610b912c8fcc3ce005c05d19c45d688d53f20b0.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="免费CDN：jsDelivr+Github"/></a><div class="content"><a class="title" href="/posts/ec72beec.html" title="免费CDN：jsDelivr+Github">免费CDN：jsDelivr+Github</a><time datetime="2021-03-06T03:50:00.000Z" title="发表于 2021-03-06 11:50:00">2021-03-06</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/dfff96f9.html" title="VSCode创建编译CMake工程的一般流程"><img data-lazy-src="https://s3.ax1x.com/2021/03/04/6VTaQ0.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="VSCode创建编译CMake工程的一般流程"/></a><div class="content"><a class="title" href="/posts/dfff96f9.html" title="VSCode创建编译CMake工程的一般流程">VSCode创建编译CMake工程的一般流程</a><time datetime="2021-03-04T08:33:25.000Z" title="发表于 2021-03-04 16:33:25">2021-03-04</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/posts/fb945601.html" title="Ubuntu下安装配置VSCode"><img data-lazy-src="https://s3.ax1x.com/2021/03/02/6k2lXn.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="Ubuntu下安装配置VSCode"/></a><div class="content"><a class="title" href="/posts/fb945601.html" title="Ubuntu下安装配置VSCode">Ubuntu下安装配置VSCode</a><time datetime="2021-03-02T12:56:25.000Z" title="发表于 2021-03-02 20:56:25">2021-03-02</time></div></div></div></div></div></div></main><footer id="footer"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2021 By LKevin</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="translateLink" type="button" title="简繁转换">繁</button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="chat_btn" type="button" title="rightside.chat_btn"><i class="fas fa-sms"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><div class="search-dialog__title" id="local-search-title">本地搜索</div><div id="local-input-panel"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div></div><hr/><div id="local-search-results"></div><span class="search-close-button"><i class="fas fa-times"></i></span></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="/js/tw_cn.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page/instantpage.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/vanilla-lazyload/dist/lazyload.iife.min.js"></script><script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"><script async="async">var preloader = {
+  endLoading: () => {
+    document.body.style.overflow = 'auto';
+    document.getElementById('loading-box').classList.add("loaded")
+  },
+  initLoading: () => {
+    document.body.style.overflow = '';
+    document.getElementById('loading-box').classList.remove("loaded")
+
+  }
+}
+window.addEventListener('load',()=> {preloader.endLoading()})
+setTimeout(function(){preloader.endLoading();}, 3000);</script></div><div class="js-pjax"><script>(()=>{
+  const $countDom = document.getElementById('twikoo-count')
+  const init = () => {
+    let initData = {
+      el: '#twikoo-wrap',
+      envId: 'blog-7gors0356a378fe3',
+      region: ''
+    }
+
+    if (false) {
+      const otherData = false
+      initData = Object.assign(initData, otherData)
+    }
+    
+    twikoo.init(initData)
+  }
+
+  const getCount = () => {
+    twikoo.getCommentsCount({
+      envId: 'blog-7gors0356a378fe3',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(function (res) {
+      $countDom.innerText = res[0].count
+    }).catch(function (err) {
+      console.error(err);
+    });
+  }
+
+  const loadTwikoo = (bool = false) => {
+    if (typeof twikoo === 'object') {
+      init()
+      bool && $countDom && setTimeout(getCount,0)
+    } else {
+      getScript('https://cdn.jsdelivr.net/npm/twikoo@1.2.0/dist/twikoo.all.min.js').then(()=> {
+        init()
+        bool && $countDom && setTimeout(getCount,0)
+      })
+    }
+  }
+
+  if ('Twikoo' === 'Twikoo' || !true) {
+    if (true) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo(true)
+  } else {
+    window.loadOtherComment = () => {
+      loadTwikoo()
+    }
+  }
+})()</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script>window.$crisp = [];
+window.CRISP_WEBSITE_ID = "978fa68e-d822-4b91-a1fe-31ba59390d0b";
+(function () {
+  d = document;
+  s = d.createElement("script");
+  s.src = "https://client.crisp.chat/l.js";
+  s.async = 1;
+  d.getElementsByTagName("head")[0].appendChild(s);
+})();
+$crisp.push(["safe", true])
+
+if (true) {
+  $crisp.push(["do", "chat:hide"])
+  $crisp.push(["on", "chat:closed", function() {
+    $crisp.push(["do", "chat:hide"])
+  }])
+  var chatBtnFn = () => {
+    var chatBtn = document.getElementById("chat_btn")
+    chatBtn.addEventListener("click", function(){
+      $crisp.push(["do", "chat:show"])
+      $crisp.push(["do", "chat:open"])
+
+    });
+  }
+  chatBtnFn()
+} else {
+  if (true) {
+    function chatBtnHide () {
+      $crisp.push(["do", "chat:hide"])
+    }
+    function chatBtnShow () {
+      $crisp.push(["do", "chat:show"])
+    }
+  }
+}</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
